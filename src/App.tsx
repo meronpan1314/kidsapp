@@ -1,88 +1,136 @@
 import React, { useState } from 'react';
 import './App.css';
-import {Line} from 'react-chartjs-2';
+import { Line } from 'react-chartjs-2';
+import { JsxAttribute } from 'typescript';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 function App() {
-  const [inputValue, setInputValue] = useState("");
-  const [todos, setTodos] = useState<Todo[]>([]);
+  const [inputValue, setInputValue] = useState(0);
+  const [weights, setweights] = useState<weight[]>([]);
 
-  type Todo = {
-    inputValue: string;
+  type weight = {
+    inputValue: number;
     id: number;
-    checked: boolean;
   };
- 
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // console.log(e.target.value);
-    setInputValue(e.target.value);
+    setInputValue(e.target.valueAsNumber);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // 新しい情報を作成
-    const newTodo: Todo = {
+    const newWeight: weight = {
       inputValue: inputValue,
-      id: todos.length,
-      checked: false,
+      id: weights.length,
     };
 
-    setTodos([newTodo, ...todos]);
-    setInputValue("")
+    setweights([newWeight, ...weights]);
+    setInputValue(0)
 
   };
 
-  const handleEdit = (id: number, inputValue: string) => {
-    const newTodos = todos.map((todo) => {
-      if (todo.id == id) {
-        todo.inputValue = inputValue;
+  const handleEdit = (id: number, inputValue: number) => {
+    const newWeights = weights.map((weight) => {
+      if (weight.id == id) {
+        weight.inputValue = inputValue;
       }
-      return todo;
+      return weight;
     });
 
-    setTodos(newTodos);
+    setweights(newWeights);
   };
 
-  const handleChecked =  (id: number, checked: boolean) => {
-    const newTodos = todos.map((todo) => {
-      if (todo.id == id) {
-        todo.checked =! checked;
-      }
-      return todo;
-    });
-
-    setTodos(newTodos);
-  };
 
   const handleDelete = (id: number) => {
-    const newTodos = todos.filter((todo) => todo.id !== id);
-    setTodos(newTodos)
+    const newWeights = weights.filter((weight) => weight.id !== id);
+    setweights(newWeights)
   };
 
+  const kidsChart = (kidsData: weight[]): JSX.Element => {
+
+    if (kidsData.length == 0) {
+      var idList: number[] = new Array(2);
+      var valueList: number[] = new Array(2);
+      idList = [0, 1];
+      valueList = [0, 0];
+    } else {
+      var idList: number[] = new Array(kidsData.length);
+      var valueList: number[] = new Array(kidsData.length);
+      for (var i: number = 0; i < kidsData.length; i++) {
+        idList[i] = kidsData[i].id + 1;
+        valueList[i] = kidsData[i].inputValue;
+      }
+      idList.reverse();
+      valueList.reverse();
+    }
+
+    const lineData = {
+      // x 軸のラベル
+      labels: idList,
+
+      datasets: [
+        {
+          label: '体重遷移図(g)',
+          // データの値
+          data: valueList,
+          // グラフの背景色
+          backgroundColor: [
+            'rgba(255, 99, 132, 0.2)',
+          ],
+          // グラフの枠線の色
+          borderColor: [
+            'rgb(255, 99, 132)',
+          ],
+          // グラフの枠線の太さ
+          borderWidth: 1,
+        },
+      ],
+    };
+
+    return <Line data={lineData} />
+  }
 
   return (
     <div className="App">
       <div>
-        <h2>こどもの成長記録管理</h2>
+        <h2>こどもの体重記録管理</h2>
         <form onSubmit={(e) => handleSubmit(e)}>
-          <input type="text" onChange={(e) => handleChange(e)} className="inputText" />
-          <input type="submit" value="登録" className='submitbottan'/>
+          <input type="number" onChange={(e) => handleChange(e)} className="inputText" />
+          <input type="submit" value="登録" className='submitbottan' />
         </form>
-        <ul className="todoList">
-          {todos.map((todo) => (
-            <li key={todo.id}>
-              <input 
-                type="text" 
-                onChange={(e) => handleEdit(todo.id, e.target.value)} 
-                className="inputText" 
-                value={todo.inputValue}
-                disabled={todo.checked}
+        {kidsChart(weights)}
+        <ul className="weightList">
+          {weights.map((weight) => (
+            <li key={weight.id}>
+              <h4>{weight.id + 1}</h4>
+              <input
+                type="number"
+                onChange={(e) => handleEdit(weight.id, e.target.valueAsNumber)}
+                className="inputText"
+                value={weight.inputValue}
               />
-              <input 
-                type="checkbox" 
-                onChange={(e) => handleChecked(todo.id, todo.checked)} 
-              />
-              <button onClick={() => handleDelete(todo.id)}>消す</button>
+              <button onClick={() => handleDelete(weight.id)}>消す</button>
             </li>
           ))}
         </ul>
