@@ -16,13 +16,13 @@
   cursor: pointer;
 }
 
-.todoList li {
+.weightList li {
   width: 10%;
   display: flex;
   align-items: center;
   margin-bottom: 10px;
 }
 
-.todoList li input {
+.weightList li input {
   padding: 7px;
 }
